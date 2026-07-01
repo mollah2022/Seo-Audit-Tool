@@ -1,0 +1,5 @@
+Django==6.0.*
+python-dotenv==1.2.*
+playwright==1.47.*
+beautifulsoup4==4.12.*
+requests==2.32.*
