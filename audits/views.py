@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import AuditURLForm
@@ -28,8 +29,32 @@ def home(request):
 
 
 def audit_history(request):
+    filter_choice = request.GET.get("filter")
     audits = Audit.objects.all()
-    return render(request, "audits/history.html", {"page_title": "Audit History", "audits": audits})
+
+    if filter_choice == "good":
+        audits = audits.filter(score_band=Audit.ScoreBand.GOOD)
+    elif filter_choice == "bad":
+        audits = audits.exclude(score_band=Audit.ScoreBand.GOOD)
+
+    paginator = Paginator(audits, 10)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    context = {
+        "page_title": "Audit History",
+        "audits": page_obj.object_list,
+        "filter_choice": filter_choice,
+        "page_obj": page_obj,
+        "paginator": paginator,
+    }
+    return render(request, "audits/history.html", context)
 
 
 def delete_audit(request, pk):

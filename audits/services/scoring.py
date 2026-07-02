@@ -1,7 +1,7 @@
 """Combines all check results into a single 0-100 overall score and a
 good/warn/poor band, used to drive the report gauge.
 """
-STATUS_POINTS = {"pass": 1.0, "warn": 0.5, "fail": 0.0}
+STATUS_POINTS = {"pass": 1.0, "warn": 0.9, "fail": 0.0}
 
 
 def compute_overall_score(check_dicts: list[dict]) -> int:

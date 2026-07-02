@@ -672,12 +672,43 @@ a {
     transform: translateY(-1px);
 }
 
+.history-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.history-filters .btn-secondary.active {
+    background: linear-gradient(135deg, #BFDBFE 0%, #93C5FD 100%);
+    color: #1D4ED8;
+}
+
 .history-table tbody tr:nth-child(odd) {
     background: #F8FAFF;
 }
 
 .history-table th {
     background: #EEF2FF;
+}
+
+.pagination-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 18px 0 0;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+}
+
+.pagination-nav .btn-secondary.disabled {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .history-table td {

@@ -9,6 +9,12 @@
         <h1>Saved audits</h1>
     </div>
 
+    <div class="history-filters">
+        <a href="{% url 'audits:history' %}" class="btn-secondary {% if not filter_choice %}active{% endif %}">All results</a>
+        <a href="{% url 'audits:history' %}?filter=good" class="btn-secondary {% if filter_choice == 'good' %}active{% endif %}">Good results</a>
+        <a href="{% url 'audits:history' %}?filter=bad" class="btn-secondary {% if filter_choice == 'bad' %}active{% endif %}">Bad results</a>
+    </div>
+
     {% if audits %}
         <div class="history-table-wrap">
             <table class="history-table">
@@ -48,6 +54,24 @@
                 </tbody>
             </table>
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-nav">
+            {% if page_obj.has_previous %}
+                <a href="?{% if filter_choice %}filter={{ filter_choice }}&{% endif %}page={{ page_obj.previous_page_number }}" class="btn-secondary">Previous</a>
+            {% else %}
+                <span class="btn-secondary disabled">Previous</span>
+            {% endif %}
+
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?{% if filter_choice %}filter={{ filter_choice }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn-secondary">Next</a>
+            {% else %}
+                <span class="btn-secondary disabled">Next</span>
+            {% endif %}
+        </div>
+        {% endif %}
     {% else %}
         <div class="empty-state">
             <p>No audit history available.</p>
