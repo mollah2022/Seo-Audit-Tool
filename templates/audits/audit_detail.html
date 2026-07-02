@@ -36,7 +36,8 @@
                     <circle
                         class="gauge-fill gauge-fill--{{ audit.score_band }}"
                         cx="80" cy="80" r="68"
-                        style="--gauge-value: {{ audit.overall_score }};"
+                        pathLength="100"
+                        style="--gauge-value: {{ audit.overall_score|default:0 }};"
                     ></circle>
                     <text x="80" y="76" class="gauge-number" text-anchor="middle">{{ audit.overall_score }}</text>
                     <text x="80" y="96" class="gauge-suffix" text-anchor="middle">/ 100</text>

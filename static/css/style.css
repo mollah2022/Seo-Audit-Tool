@@ -740,7 +740,6 @@ a {
 }
 
 .gauge {
-    transform: rotate(-90deg);
     animation: scale-in var(--duration-slow) var(--ease) both;
 }
 
@@ -754,12 +753,13 @@ a {
     fill: none;
     stroke-width: 10;
     stroke-linecap: round;
-    stroke-dasharray: 0 427.26;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
     animation: gauge-draw var(--duration-slow) var(--ease) 0.15s forwards;
 }
 
 @keyframes gauge-draw {
-    to { stroke-dasharray: calc(var(--gauge-value) / 100 * 427.26) 427.26; }
+    to { stroke-dashoffset: calc(100 - var(--gauge-value)); }
 }
 
 .gauge-fill--good { stroke: var(--pass); }
@@ -768,9 +768,7 @@ a {
 
 .gauge-number,
 .gauge-suffix {
-    transform: rotate(90deg);
-    transform-box: fill-box;
-    transform-origin: center;
+    transform: none;
     font-family: var(--font-mono);
 }
 
@@ -800,7 +798,7 @@ a {
     .gauge { animation: none; }
     .gauge-fill {
         animation: none;
-        stroke-dasharray: calc(var(--gauge-value) / 100 * 427.26) 427.26;
+        stroke-dashoffset: calc(100 - var(--gauge-value));
     }
 }
 

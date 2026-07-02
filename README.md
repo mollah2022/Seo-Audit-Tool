@@ -1,78 +1,133 @@
 # SEO Audit Tool
 
-A Django (MVT architecture) web app that audits a website's on-page SEO,
-technical SEO, and performance. Frontend is rendered with Django Templates —
-no separate frontend framework.
+SEO Audit Tool is a Django web application that scans websites for SEO issues and displays a saved audit report with score, summary, and category results. The app uses Django templates for rendering and a set of service modules to analyze on-page, technical, social, link, and performance signals.
+
+## Features
+
+- Submit a website URL for a new SEO scan
+- View a detailed report with category-based results
+- Save audit history for later viewing
+- Open a saved report from history
+- Delete a saved audit from history
+- Download a saved report as a PDF
 
 ## Tech stack
 
-- **Backend / Frontend:** Django (MVT), Django Templates
-- **Crawler (next step):** Playwright
-- **Database:** SQLite (local dev)
+- Backend: Django 6.0
+- Frontend: Django Templates, HTML, CSS, JavaScript
+- Database: SQLite
+- Browser automation: Playwright
+- Parsing: BeautifulSoup
+- HTTP requests: Requests
 
 ## Project structure
 
-```
+```text
 seo_audit_tool/
-├── config/             # Project settings, root urls.py, wsgi/asgi
-├── audits/             # Main app: models, views, urls, services/
-│   └── services/        # Crawler + SEO check logic (added next)
-├── templates/           # Django templates (base.html, partials/, audits/)
-├── static/               # CSS / JS / images
-├── media/                # Screenshots, exports (gitignored, dir kept)
-├── manage.py
-├── requirements.txt
-└── .env.example
+├── audits/                  # Main Django app
+│   ├── management/          # Custom Django management commands
+│   ├── migrations/          # Database migrations
+│   ├── services/            # SEO audit logic and checks
+│   ├── templates/           # App templates (if any)
+│   ├── models.py            # Audit and CheckResult models
+│   ├── views.py             # Homepage, history, detail, delete, PDF views
+│   └── urls.py              # App routes
+├── config/                  # Django settings and URL configuration
+├── static/                  # CSS, JS, images
+├── templates/               # Base templates and shared UI partials
+├── media/                   # Media output such as screenshots or exports
+├── manage.py                # Django entry point
+├── requirements.txt         # Python dependencies
+├── .env.example             # Example environment variables
+└── db.sqlite3               # Local development database
 ```
 
-## Local setup
+## Prerequisites
 
-1. **Create and activate a virtual environment**
+Make sure you have the following installed on your machine:
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # Windows: venv\Scripts\activate
-   ```
+- Python 3.10+ recommended
+- pip
+- Git
 
-2. **Install dependencies**
+## Clone the repository
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/mollah2022/Seo-Audit-Tool.git
+cd Seo-Audit-Tool
+```
 
-3. **Set up environment variables**
+## Setup instructions
 
-   ```bash
-   cp .env.example .env
-   ```
+### 1) Create and activate a virtual environment
 
-   Edit `.env` if needed (default values work fine for local development).
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-4. **Run migrations**
+If you are on Windows PowerShell, use:
 
-   ```bash
-   python manage.py migrate
-   ```
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-5. **Run the development server**
+### 2) Install Python dependencies
 
-   ```bash
-   python manage.py runserver
-   ```
+```bash
+pip install -r requirements.txt
+```
 
-6. Visit **http://127.0.0.1:8000/** — you should see the homepage with the
-   "Run Audit" form.
+### 3) Create environment variables
 
-## What's built so far
+```bash
+cp .env.example .env
+```
 
-- Project scaffolding (`config/`, `audits/` app)
-- Base template + navbar/footer partials
-- Static file setup (CSS/JS)
-- Homepage with a URL input form (not yet wired to a real audit)
+Open `.env` and update the values if needed. The default settings are usually fine for local development.
 
-## What's next
+### 4) Apply database migrations
 
-- Add `Audit` and `CheckResult` models
-- Build `audits/services/crawler.py` using Playwright
-- Build on-page, technical, and performance checkers
-- Wire the form on the homepage to a "run audit" view + results page
+```bash
+python manage.py migrate
+```
+
+### 5) Start the server
+
+```bash
+python manage.py runserver
+```
+
+Then open the application in your browser:
+
+```text
+http://127.0.0.1:8000/
+```
+
+## How to use the app
+
+1. Open the homepage.
+2. Enter a website URL in the scan form.
+3. Submit the form to start the audit.
+4. View the SEO report once the scan completes.
+5. Visit the History page to see saved audits, open reports, delete records, or download PDFs.
+
+## Running tests
+
+```bash
+python manage.py test audits.tests
+```
+
+## Notes
+
+- The project uses SQLite for local development, so no external database setup is required.
+- Playwright may need its browser binaries installed on first use. If the crawler reports a browser issue, install Playwright browsers with:
+
+```bash
+python -m playwright install
+```
+
+## License
+
+This project is open source. Please check the repository license before using it in production.
