@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if error %}
+<section class="report-header">
+    <div class="readout-panel reveal">
+        <div>
+            <p class="eyebrow">Saved audit</p>
+            <h1>Report unavailable</h1>
+            <p class="report-meta">{{ error }}</p>
+            <p><a href="{% url 'audits:history' %}" class="btn-secondary">Back to history</a></p>
+        </div>
+    </div>
+</section>
+{% else %}
 <section class="report-header">
     <a href="{% url 'audits:home' %}" class="back-link">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10 6H2M2 6L5.5 2.5M2 6L5.5 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -146,4 +158,5 @@
     </div>
     {% endfor %}
 </section>
+{% endif %}
 {% endblock %}
