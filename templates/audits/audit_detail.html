@@ -21,6 +21,9 @@
 
     <div class="readout-panel reveal">
         <div class="readout-top">
+            <div class="report-actions">
+                <a href="{% url 'audits:audit_pdf' pk=audit.pk %}" class="btn-secondary">Download PDF</a>
+            </div>
             <div>
                 <p class="eyebrow">Scan results</p>
                 <h1 class="report-url">{{ audit.domain }}</h1>
