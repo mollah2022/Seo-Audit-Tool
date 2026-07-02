@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Audit History{% endblock %}
+
+{% block content %}
+<section class="history-page reveal">
+    <div class="page-header">
+        <p class="eyebrow">Audit history</p>
+        <h1>Saved audits</h1>
+    </div>
+
+    {% if audits %}
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Website</th>
+                        <th>Date &amp; Time</th>
+                        <th>SEO Score</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audit in audits %}
+                        <tr>
+                            <td class="history-url">
+                                <a href="{{ audit.url }}" target="_blank" rel="noopener noreferrer">{{ audit.domain|default:audit.url }}</a>
+                            </td>
+                            <td>{{ audit.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if audit.overall_score is not None %}
+                                    <span class="score-pill score-pill--{{ audit.score_band|default:'warn' }}">{{ audit.overall_score }}</span>
+                                {% else %}
+                                    <span class="score-pill score-pill--none">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ audit.get_status_display }}</td>
+                            <td class="history-actions">
+                                <a href="{% url 'audits:audit_detail' pk=audit.pk %}" class="btn-secondary">Show results</a>
+                                <form method="post" action="{% url 'audits:delete_audit' pk=audit.pk %}" class="delete-form" onsubmit="return confirm('Delete this audit from history?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No audit history available.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
