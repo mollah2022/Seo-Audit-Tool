@@ -21,6 +21,10 @@ class Audit(models.Model):
     score_band = models.CharField(max_length=10, choices=ScoreBand.choices, blank=True)
     score_label = models.CharField(max_length=150, blank=True)
     error_message = models.TextField(blank=True)
+    # Full snapshot of the audit result (categories, checks, summary) at the
+    # moment the audit finished, so audit history can be served — and later
+    # re-displayed or exported — without re-joining CheckResult rows.
+    result_json = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -85,6 +89,55 @@ class Audit(models.Model):
             "warn_pct": pct(counts.get(CheckResult.Status.WARN, 0)),
             "fail_pct": pct(counts.get(CheckResult.Status.FAIL, 0)),
         }
+
+    def has_saved_result(self):
+        return bool(self.result_json and self.result_json.get("categories"))
+
+    def result_categories(self):
+        return self.result_json.get("categories", []) if self.result_json else []
+
+    def result_summary(self):
+        if not self.result_json:
+            return {"total": 0, "pass": 0, "warn": 0, "fail": 0, "pass_pct": 0, "warn_pct": 0, "fail_pct": 0}
+
+        summary = self.result_json.get("summary", {})
+        total = summary.get("total", 0)
+
+        def pct(count):
+            return round((count / total) * 100) if total else 0
+
+        return {
+            "total": total,
+            "pass": summary.get("pass", 0),
+            "warn": summary.get("warn", 0),
+            "fail": summary.get("fail", 0),
+            "pass_pct": pct(summary.get("pass", 0)),
+            "warn_pct": pct(summary.get("warn", 0)),
+            "fail_pct": pct(summary.get("fail", 0)),
+        }
+
+    # -- Audit History API serialization --------------------------------
+    def to_summary_dict(self):
+        """Lightweight representation used by the history list endpoint."""
+        return {
+            "id": self.pk,
+            "url": self.url,
+            "domain": self.domain,
+            "status": self.status,
+            "score": self.overall_score,
+            "score_band": self.score_band,
+            "score_label": self.score_label,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    def to_detail_dict(self):
+        """Full representation, including the saved JSON result, used by
+        the single-audit endpoint and by the save-audit response."""
+        data = self.to_summary_dict()
+        data["error_message"] = self.error_message
+        data["result"] = self.result_json
+        return data
 
 
 class CheckResult(models.Model):
