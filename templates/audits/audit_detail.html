@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="report-header">
+    <a href="{% url 'audits:home' %}" class="back-link">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10 6H2M2 6L5.5 2.5M2 6L5.5 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        New scan
+    </a>
+
+    <div class="readout-panel reveal">
+        <div class="readout-top">
+            <div>
+                <p class="eyebrow">Scan results</p>
+                <h1 class="report-url">{{ audit.domain }}</h1>
+                <p class="report-meta">{{ audit.url }} &middot; scanned {{ audit.created_at|timesince }} ago</p>
+            </div>
+
+            <div class="gauge-wrap">
+                <svg class="gauge" viewBox="0 0 160 160" width="150" height="150">
+                    <circle class="gauge-track" cx="80" cy="80" r="68"></circle>
+                    <circle
+                        class="gauge-fill gauge-fill--{{ audit.score_band }}"
+                        cx="80" cy="80" r="68"
+                        style="--gauge-value: {{ audit.overall_score }};"
+                    ></circle>
+                    <text x="80" y="76" class="gauge-number" text-anchor="middle">{{ audit.overall_score }}</text>
+                    <text x="80" y="96" class="gauge-suffix" text-anchor="middle">/ 100</text>
+                </svg>
+                <p class="gauge-label gauge-label--{{ audit.score_band }}">{{ audit.score_label }}</p>
+            </div>
+        </div>
+
+        <div class="signal-strip">
+            <div class="signal-bar" role="img" aria-label="{{ summary.pass }} passing, {{ summary.warn }} warnings, {{ summary.fail }} failing out of {{ summary.total }} checks">
+                <span class="signal-bar-segment signal-bar-segment--pass" style="width: {{ summary.pass_pct }}%;"></span>
+                <span class="signal-bar-segment signal-bar-segment--warn" style="width: {{ summary.warn_pct }}%;"></span>
+                <span class="signal-bar-segment signal-bar-segment--fail" style="width: {{ summary.fail_pct }}%;"></span>
+            </div>
+            <div class="signal-stats">
+                <div class="signal-stat signal-stat--total">
+                    <span class="signal-stat-dot"></span>
+                    <span class="signal-stat-value">{{ summary.total }}</span>
+                    <span class="signal-stat-label">Checks run</span>
+                </div>
+                <div class="signal-stat signal-stat--pass">
+                    <span class="signal-stat-dot"></span>
+                    <span class="signal-stat-value">{{ summary.pass }}</span>
+                    <span class="signal-stat-label">Passing</span>
+                </div>
+                <div class="signal-stat signal-stat--warn">
+                    <span class="signal-stat-dot"></span>
+                    <span class="signal-stat-value">{{ summary.warn }}</span>
+                    <span class="signal-stat-label">Warnings</span>
+                </div>
+                <div class="signal-stat signal-stat--fail">
+                    <span class="signal-stat-dot"></span>
+                    <span class="signal-stat-value">{{ summary.fail }}</span>
+                    <span class="signal-stat-label">Failing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<nav class="report-tabs reveal" role="tablist" aria-label="Check categories">
+    {% for category in categories %}
+    <button
+        type="button"
+        class="report-tab report-tab--{{ category.channel }}"
+        role="tab"
+        id="tab-{{ category.channel }}"
+        data-target="panel-{{ category.channel }}"
+        aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+        aria-controls="panel-{{ category.channel }}"
+    >
+        <span class="report-tab-icon" aria-hidden="true">
+            {% if category.channel == "A" %}
+                <svg viewBox="0 0 20 20" fill="none"><path d="M5 2.5h7l3 3v12h-10v-15Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.5v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10h6M7 13h6M7 7h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            {% elif category.channel == "B" %}
+                <svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5v3M10 14.5v3M17.5 10h-3M5.5 10h-3M15.6 4.4l-2.1 2.1M6.5 13.5l-2.1 2.1M15.6 15.6l-2.1-2.1M6.5 6.5l-2.1-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+            {% elif category.channel == "C" %}
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="5" cy="10" r="2.2" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="5" r="2.2" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="15" r="2.2" stroke="currentColor" stroke-width="1.5"/><path d="M6.9 8.9l6.2-2.8M6.9 11.1l6.2 2.8" stroke="currentColor" stroke-width="1.4"/></svg>
+            {% elif category.channel == "D" %}
+                <svg viewBox="0 0 20 20" fill="none"><path d="M8.5 11.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 6.2l1-1a2.9 2.9 0 0 1 4.1 4.1l-1.3 1.3M11 13.8l-1 1a2.9 2.9 0 0 1-4.1-4.1l1.3-1.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            {% else %}
+                <svg viewBox="0 0 20 20" fill="none"><path d="M3 16h14M6 16v-4M10 16V7M14 16v-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            {% endif %}
+        </span>
+        <span class="report-tab-text">
+            <span class="report-tab-name">{{ category.name }}</span>
+            <span class="report-tab-score">{{ category.passing }}/{{ category.total }} passing</span>
+        </span>
+    </button>
+    {% endfor %}
+</nav>
+
+<section class="channels-report">
+    {% for category in categories %}
+    <div
+        class="report-channel report-channel--{{ category.channel }}{% if forloop.first %} panel-enter{% endif %}"
+        id="panel-{{ category.channel }}"
+        role="tabpanel"
+        aria-labelledby="tab-{{ category.channel }}"
+        {% if not forloop.first %}hidden{% endif %}
+    >
+        <div class="report-channel-header">
+            <span class="report-channel-icon" aria-hidden="true">
+                {% if category.channel == "A" %}
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M5 2.5h7l3 3v12h-10v-15Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.5v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10h6M7 13h6M7 7h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                {% elif category.channel == "B" %}
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5v3M10 14.5v3M17.5 10h-3M5.5 10h-3M15.6 4.4l-2.1 2.1M6.5 13.5l-2.1 2.1M15.6 15.6l-2.1-2.1M6.5 6.5l-2.1-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+                {% elif category.channel == "C" %}
+                    <svg viewBox="0 0 20 20" fill="none"><circle cx="5" cy="10" r="2.2" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="5" r="2.2" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="15" r="2.2" stroke="currentColor" stroke-width="1.5"/><path d="M6.9 8.9l6.2-2.8M6.9 11.1l6.2 2.8" stroke="currentColor" stroke-width="1.4"/></svg>
+                {% elif category.channel == "D" %}
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M8.5 11.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 6.2l1-1a2.9 2.9 0 0 1 4.1 4.1l-1.3 1.3M11 13.8l-1 1a2.9 2.9 0 0 1-4.1-4.1l1.3-1.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                {% else %}
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M3 16h14M6 16v-4M10 16V7M14 16v-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                {% endif %}
+            </span>
+            <h2>{{ category.name }}</h2>
+            <span class="channel-score">{{ category.passing }}/{{ category.total }} passing</span>
+        </div>
+
+        <ul class="check-list">
+            {% for check in category.checks %}
+            <li class="check-row check-row--{{ check.status }}">
+                <span class="check-icon" aria-hidden="true">
+                    {% if check.status == "pass" %}
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    {% elif check.status == "warn" %}
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L13 12.5H1L7 1.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 5.5V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
+                    {% else %}
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    {% endif %}
+                </span>
+                <div class="check-body">
+                    <p class="check-name">{{ check.name }}</p>
+                    <p class="check-detail">{{ check.detail }}</p>
+                    {% if check.recommendation %}
+                        <p class="check-recommendation"><span class="check-recommendation-label">Fix:</span> {{ check.recommendation }}</p>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}
