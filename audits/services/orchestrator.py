@@ -46,6 +46,7 @@ def run_audit(audit: Audit) -> Audit:
 
     overall_score = scoring.compute_overall_score(check_dicts)
     band, label = scoring.score_band(overall_score)
+    result_json = _build_result_json(check_dicts, overall_score, band, label)
 
     with transaction.atomic():
         audit.domain = urlparse(crawl_result.final_url).hostname or audit.domain
@@ -53,6 +54,7 @@ def run_audit(audit: Audit) -> Audit:
         audit.score_band = band
         audit.score_label = label
         audit.status = Audit.Status.DONE
+        audit.result_json = result_json
         audit.save()
 
         CheckResult.objects.bulk_create(
@@ -70,3 +72,41 @@ def run_audit(audit: Audit) -> Audit:
         )
 
     return audit
+
+
+def _build_result_json(check_dicts, overall_score, band, label):
+    """
+    Snapshot of the full audit result — categories, their checks, and the
+    pass/warn/fail summary — saved verbatim on the Audit row so audit
+    history can be served straight from the database (see Audit.result_json
+    and Audit.to_detail_dict()).
+    """
+    categories = []
+    for key, channel, category_label in Audit.CATEGORY_ORDER:
+        cat_checks = [c for c in check_dicts if c["category"] == key]
+        if not cat_checks:
+            continue
+        passing = sum(1 for c in cat_checks if c["status"] == "pass")
+        categories.append(
+            {
+                "key": key,
+                "channel": channel,
+                "name": category_label,
+                "passing": passing,
+                "total": len(cat_checks),
+                "checks": cat_checks,
+            }
+        )
+
+    total = len(check_dicts)
+    counts = {"pass": 0, "warn": 0, "fail": 0}
+    for c in check_dicts:
+        counts[c["status"]] = counts.get(c["status"], 0) + 1
+
+    return {
+        "overall_score": overall_score,
+        "score_band": band,
+        "score_label": label,
+        "summary": {"total": total, **counts},
+        "categories": categories,
+    }

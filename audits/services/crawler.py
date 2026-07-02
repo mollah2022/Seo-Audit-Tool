@@ -44,7 +44,7 @@ def _launch_browser(playwright):
     return playwright.chromium.launch(headless=True)
 
 
-def crawl(url: str, timeout_ms: int = 20000) -> CrawlResult:
+def crawl(url: str, timeout_ms: int = 45000) -> CrawlResult:
     start = time.monotonic()
 
     try:
@@ -59,7 +59,13 @@ def crawl(url: str, timeout_ms: int = 20000) -> CrawlResult:
                     ),
                 )
                 page = context.new_page()
-                response = page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+                try:
+                    response = page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+                except PlaywrightTimeoutError:
+                    # Some large or highly dynamic sites never reach a full
+                    # network idle state. Fall back to DOM content loaded so
+                    # the audit can still inspect the page.
+                    response = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
                 html = page.content()
                 final_url = page.url
                 status_code = response.status if response else None
